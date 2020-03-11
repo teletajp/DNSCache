@@ -7,10 +7,13 @@
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #pragma comment(lib, "Ws2_32.lib")
+#include <synchapi.h> // Sleep
+#define pause(millsec)   Sleep(millsec)
 #elif __linux__
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#define pause(millsec) sleep(millsec / 1000)
 #endif
 
 
@@ -42,17 +45,18 @@ public:
     void update(const std::string &name, const std::string &ip);
     std::string resolve(const std::string & name);
     age_list_t    age_list_;
-    record_dict_t storage_[MAX_DNS_NAME_LEN];
+    record_dict_t storage_[MAX_DNS_NAME_LEN+1];
     size_t current_size_;
     std::atomic_flag is_lock;
-    void lock() { while (is_lock.test_and_set(std::memory_order_acquire)) {} };
-    void unlock() { is_lock.clear(); };
+    void lock() {while (is_lock.test_and_set(std::memory_order_acquire)) pause(0);}
+    void unlock() { is_lock.clear(std::memory_order_release); };
 };
 
 DNSCache::Impl::Impl(size_t max_size):
 max_size_(max_size),
 current_size_(0)
 {
+    unlock();
 }
 DNSCache::Impl::~Impl()
 {
