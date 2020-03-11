@@ -3,6 +3,7 @@
 #include <cctype>
 #include <map>
 #include <list>
+#include <atomic>
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #pragma comment(lib, "Ws2_32.lib")
@@ -43,6 +44,9 @@ public:
     age_list_t    age_list_;
     record_dict_t storage_[MAX_DNS_NAME_LEN];
     size_t current_size_;
+    std::atomic_flag is_lock;
+    void lock() { while (is_lock.test_and_set(std::memory_order_acquire)) {} };
+    void unlock() { is_lock.clear(); };
 };
 
 DNSCache::Impl::Impl(size_t max_size):
@@ -55,6 +59,7 @@ DNSCache::Impl::~Impl()
 }
 void DNSCache::Impl::update(const std::string &name, const std::string &ip)
 {
+    lock();
     const size_t len = name.length();
     auto ret = storage_[len].emplace(name, AuxIp{len, ip});
     auto &it = ret.first;
@@ -76,15 +81,21 @@ void DNSCache::Impl::update(const std::string &name, const std::string &ip)
         it->second.ip = ip;
         age_list_.splice(age_list_.end(), age_list_, it->second.age_it);
     }
+    unlock();
 }
 std::string DNSCache::Impl::resolve(const std::string & name)
 {
-    if (!isValidDnsName(name)) return std::string();
+    lock();
     const size_t len = name.length();
     auto &find_it = storage_[len].find(name);
-    if (find_it == storage_[len].end()) return std::string();
+    if (find_it == storage_[len].end())
+    {
+        unlock();
+        return std::string();
+    }
 
     age_list_.splice(age_list_.end(), age_list_, find_it->second.age_it);
+    unlock();
     return find_it->second.ip;
 }
 
