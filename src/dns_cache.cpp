@@ -112,6 +112,11 @@ pimpl_(std::make_unique<Impl>(max_size))
 DNSCache::~DNSCache()
 {
 }
+DNSCache& DNSCache::Instance(size_t max_size)
+{
+    static DNSCache instance_(max_size);
+    return instance_;
+}
 void DNSCache::update(const std::string & name, const std::string & ip)
 {
     if (!pimpl_->max_size_ || !isValidDnsName(name) || !isValidIp(ip)) return;
