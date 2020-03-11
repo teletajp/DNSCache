@@ -1,6 +1,17 @@
 #include "dns_cache.h"
 #include <algorithm>
 #include <cctype>
+
+#ifdef _WIN32
+#include <ws2tcpip.h>
+#pragma comment(lib, "Ws2_32.lib")
+#elif __linux__
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#endif
+
+
 namespace dns
 {
 #define MAX_DNS_NAME_LEN (255U)
@@ -37,17 +48,17 @@ DNSCache::~DNSCache()
 
 void DNSCache::update(const std::string & name, const std::string & ip)
 {
-    if (!isValid(name)) return;
+    if (!isValidDnsName(name)) return;
     pimpl_->update(name, ip);
 }
 
 std::string DNSCache::resolve(const std::string & name)
 {
-    if (!isValid(name)) return std::string();
+    if (!isValidDnsName(name)) return std::string();
 
     return std::string();
 }
-bool DNSCache::isValid(const std::string & name)
+bool DNSCache::isValidDnsName(const std::string & name)
 {
     size_t len = name.length();
     if (len == 0 || len > MAX_DNS_NAME_LEN) return false;
@@ -84,5 +95,33 @@ bool DNSCache::isValid(const std::string & name)
     }
     if (is_hyphen || is_dot)  return false;// last char is not letter and not digit
     return true;
+}
+bool DNSCache::isValidIp(const std::string & ip)
+{
+
+    bool isV4 = true;
+    bool isV6 = false;
+    std::string::size_type beg, end;
+    beg = end = 0;
+    end = ip.find('.', beg);
+    if (end == std::string::npos)
+    {
+        end = ip.find(':', beg);
+        if (end == std::string::npos) return false;
+        isV6 = true;
+        isV4 = false;
+    }
+
+    if (isV4)
+    {
+        in_addr buf;
+        if (inet_pton(AF_INET, ip.c_str(), (PVOID)&buf) > 0) return true;
+    }
+    else
+    {
+        in6_addr buf;
+        if (inet_pton(AF_INET6, ip.c_str(), (PVOID)&buf) > 0) return true;
+    }
+    return false;
 }
 }

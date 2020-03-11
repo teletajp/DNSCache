@@ -28,7 +28,12 @@ public:
     * \param name Dns name
     * \return true - Valid name, false invalid name
     */
-    bool isValid(const std::string& name);
+    bool isValidDnsName(const std::string& name);
+    /*! \brief Check ip correct format
+    * \param ip ip-address string
+    * \return true - Valid ip, false invalid ip
+    */
+    bool isValidIp(const std::string& ip);
 private:
     DNSCache(const DNSCache&) = delete;
     DNSCache(DNSCache&&) = delete;
