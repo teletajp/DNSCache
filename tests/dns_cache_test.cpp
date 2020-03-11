@@ -20,6 +20,7 @@ protected:
 TEST(DnsCacheTest_isValidDns, OK)
 {
     ASSERT_TRUE(isValidDnsName("ya.ru"));
+    ASSERT_TRUE(isValidDnsName("y"));
     ASSERT_FALSE(isValidDnsName("1ya.ru"));
     ASSERT_FALSE(isValidDnsName("-ya.ru"));
     ASSERT_FALSE(isValidDnsName("ya-.ru"));
@@ -45,6 +46,12 @@ TEST(DnsCacheTest_isValidIp, OK)
     ASSERT_FALSE(isValidIp("127.0.0000.257"));
     ASSERT_FALSE(isValidIp("127.0..257"));
     ASSERT_FALSE(isValidIp("0.0.0.FF"));
+}
+
+TEST(DnsCacheTest_update_resolve, ZeroSize)
+{
+    DNSCache dns_server(0);
+    dns_server.update("localhost", "127.0.0.1");
 }
 
 TEST(DnsCacheTest_update_resolve, OK)

@@ -16,6 +16,6 @@ PRIVATE
 
 target_sources(${PROJECT_NAME}
 PUBLIC
-	dns_cache.h
-	dns_cache.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/dns_cache.h
+	${CMAKE_CURRENT_SOURCE_DIR}/dns_cache.cpp
 )

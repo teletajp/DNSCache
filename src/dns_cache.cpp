@@ -114,12 +114,12 @@ DNSCache::~DNSCache()
 }
 void DNSCache::update(const std::string & name, const std::string & ip)
 {
-    if (!isValidDnsName(name) || !isValidIp(ip)) return;
+    if (!pimpl_->max_size_ || !isValidDnsName(name) || !isValidIp(ip)) return;
     pimpl_->update(name, ip);
 }
 std::string DNSCache::resolve(const std::string & name)
 {
-    if (!isValidDnsName(name)) return std::string();
+    if (!pimpl_->max_size_ || !isValidDnsName(name)) return std::string();
     return pimpl_->resolve(name);
 }
 bool isValidDnsName(const std::string & name)
