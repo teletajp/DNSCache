@@ -84,8 +84,8 @@ std::string DNSCache::Impl::resolve(const std::string & name)
     auto &find_it = storage_[len].find(name);
     if (find_it == storage_[len].end()) return std::string();
 
-
-    return std::string();
+    age_list_.splice(age_list_.end(), age_list_, find_it->second.age_it);
+    return find_it->second.ip;
 }
 
 DNSCache::DNSCache(size_t max_size):
