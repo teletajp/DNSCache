@@ -4,6 +4,7 @@
 #include <map>
 #include <list>
 #include <atomic>
+#include <mutex>
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #pragma comment(lib, "Ws2_32.lib")
@@ -37,6 +38,8 @@ struct AuxIp
     age_list_iterator_t age_it;
     AuxIp(const size_t dns_name_len, const std::string &ip) :dns_name_len(dns_name_len), ip(ip) {}
 };
+
+static std::mutex singleton_creation_mut;
 
 class DNSCache::Impl
 {
@@ -114,8 +117,18 @@ DNSCache::~DNSCache()
 }
 DNSCache& DNSCache::Instance(size_t max_size)
 {
-    static DNSCache instance_(max_size);
-    return instance_;
+    static DNSCache *pinstance;
+    if (pinstance == nullptr)
+    {
+        DNSCache *tmp;
+		{
+			std::lock_guard<std::mutex> lock(singleton_creation_mut);
+            static DNSCache instance_(max_size);
+			tmp = &instance_;
+		}
+		pinstance = tmp;
+    }
+    return *pinstance;
 }
 void DNSCache::update(const std::string & name, const std::string & ip)
 {
