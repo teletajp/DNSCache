@@ -1,16 +1,18 @@
 # DNSCache
 The implementation of class for the DNS cache with the following interface:
-*
+```
 class DNSCache
 {
 public:
 explicit DNSCache(size_t max_size);
 void update(const std::string& name, const std::string& ip);
 std::string resolve(const std::string& name);
-};*
-
+};
+```
 This class stores mapping between the name and IP address. The maximum number of records available for storage is initialize in the constructor with the max_size parameter.
+
 Method **update()** either updates the existing record or adds a new one. If the limit set by max_size is exceeded, the oldest unused records will be deleted from cache. The oldest pair (name and IP-address) that does not involved in update() or resolve() procedures longer than other.
+
 Method **resolve()** returns from cache the IP address for the given name parameter or a empty string if not found.
 The class supports correct operation in a multithreaded application, when update() and resolve() are called from different threads at the same time.
 
