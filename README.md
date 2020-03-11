@@ -17,21 +17,21 @@ Method **resolve()** returns from cache the IP address for the given name parame
 The class supports correct operation in a multithreaded application, when update() and resolve() are called from different threads at the same time.
 
 ## Build DNSCache library
-1. ol git clone https://github.com/teletajp/DNSCache.git
-2. ol cd DNSCache
-3. ol mkdir build
-4. ol cd build
-5. ol make
+1. git clone https://github.com/teletajp/DNSCache.git
+2. cd DNSCache
+3. mkdir build
+4. cd build
+5. make
 
 If you want build tests, you need install **googletest framework**.
 ### Install googletest framework
-1. ol git clone https://github.com/google/googletest.git
-2. ol cd googletest
-3. ol mkdir build
-4. ol cd build
-5. ol cmake -DCMAKE_CXX_COMPILER="c++" -DCMAKE_CXX_FLAGS="-std=c++11 -stdlib=libc++" ../
-6. ol make
-7. ol sudo make install
+1. git clone https://github.com/google/googletest.git
+2. cd googletest
+3. mkdir build
+4. cd build
+5. cmake -DCMAKE_CXX_COMPILER="c++" -DCMAKE_CXX_FLAGS="-std=c++11 -stdlib=libc++" ../
+6. make
+7. sudo make install
 
 ## Features
 
