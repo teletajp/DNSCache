@@ -9,11 +9,13 @@
 #pragma comment(lib, "Ws2_32.lib")
 #include <synchapi.h> // Sleep
 #define pause(millsec)   Sleep(millsec)
-#elif __linux__
+#elif __linux__ or __APPLE__
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 #define pause(millsec) sleep(millsec / 1000)
+#define PVOID void*
 #endif
 
 
@@ -91,7 +93,7 @@ std::string DNSCache::Impl::resolve(const std::string & name)
 {
     lock();
     const size_t len = name.length();
-    auto &find_it = storage_[len].find(name);
+    const auto &find_it = storage_[len].find(name);
     if (find_it == storage_[len].end())
     {
         unlock();
@@ -124,7 +126,7 @@ bool isValidDnsName(const std::string & name)
 {
     size_t len = name.length();
     if (len == 0 || len > MAX_DNS_NAME_LEN) return false;
-    int lable_len = 0;
+    unsigned lable_len = 0;
     bool is_digit, is_hyphen, is_dot, is_alpha;
     for (size_t i = 0; i < len; ++i)
     {

@@ -1,3 +1,6 @@
-cmake .
-cmake --build .
-cmake --build . --target test
+mkdir build
+cd build
+cmake ..
+make
+#cmake --build .
+#cmake --build . --target test
