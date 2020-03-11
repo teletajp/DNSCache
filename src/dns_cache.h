@@ -2,6 +2,16 @@
 #include <string>
 namespace dns
 {
+/*! \brief Check ip correct format
+* \param ip ip-address string
+* \return true - Valid ip, false invalid ip
+*/
+bool isValidIp(const std::string& ip);
+ /*! \brief Check dns name correct format
+* \param name Dns name
+* \return true - Valid name, false invalid name
+*/
+bool isValidDnsName(const std::string& name);
 /*! \brief Class stores mapping between the name and IP address.
 */
 class DNSCache
@@ -19,21 +29,11 @@ public:
     * \param ip ip address string
     */
     void update(const std::string& name, const std::string& ip);
-    /*! \brief Update dns record
+    /*! \brief Returns from cache the IP address for the given name parameter or a string if not found.
     * \param name Dns name
     * \return ip address string
     */
     std::string resolve(const std::string& name);
-    /*! \brief Check dns name correct format
-    * \param name Dns name
-    * \return true - Valid name, false invalid name
-    */
-    bool isValidDnsName(const std::string& name);
-    /*! \brief Check ip correct format
-    * \param ip ip-address string
-    * \return true - Valid ip, false invalid ip
-    */
-    bool isValidIp(const std::string& ip);
 private:
     DNSCache(const DNSCache&) = delete;
     DNSCache(DNSCache&&) = delete;

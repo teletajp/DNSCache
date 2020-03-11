@@ -1,7 +1,8 @@
 #include "dns_cache.h"
 #include <algorithm>
 #include <cctype>
-
+#include <map>
+#include <list>
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #pragma comment(lib, "Ws2_32.lib")
@@ -16,6 +17,21 @@ namespace dns
 {
 #define MAX_DNS_NAME_LEN (255U)
 #define MAX_LABLE_LEN (63U)
+#define MAX_IPV6_LEN (16U)
+struct AuxIp;
+using record_dict_t = std::map<std::string, AuxIp>;
+using record_dict_iterator_t = std::map<std::string, AuxIp>::iterator;
+using age_list_t = std::list<record_dict_iterator_t>;
+using age_list_iterator_t = std::list<record_dict_iterator_t>::iterator;
+
+struct AuxIp
+{
+    size_t dns_name_len;
+    std::string ip;
+    age_list_iterator_t age_it;
+    AuxIp(const size_t dns_name_len, const std::string &ip) :dns_name_len(dns_name_len), ip(ip) {}
+};
+
 class DNSCache::Impl
 {
 public:
@@ -23,42 +39,73 @@ public:
     ~Impl();
     size_t max_size_;
     void update(const std::string &name, const std::string &ip);
+    std::string resolve(const std::string & name);
+    age_list_t    age_list_;
+    record_dict_t storage_[MAX_DNS_NAME_LEN];
+    size_t current_size_;
 };
 
 DNSCache::Impl::Impl(size_t max_size):
-max_size_(max_size)
+max_size_(max_size),
+current_size_(0)
 {
 }
-
 DNSCache::Impl::~Impl()
 {
 }
 void DNSCache::Impl::update(const std::string &name, const std::string &ip)
 {
     const size_t len = name.length();
+    auto ret = storage_[len].emplace(name, AuxIp{len, ip});
+    auto &it = ret.first;
+    bool is_new = ret.second;
+    if (is_new)
+    {
+        if (current_size_ == max_size_)
+        {
+            auto &del_rec_it = age_list_.front();
+            storage_[del_rec_it->second.dns_name_len].erase(del_rec_it);
+            age_list_.pop_front();
+            --current_size_;
+        }
+        it->second.age_it = age_list_.insert(age_list_.end(), it);
+        ++current_size_;
+    }
+    else
+    {
+        it->second.ip = ip;
+        age_list_.splice(age_list_.end(), age_list_, it->second.age_it);
+    }
 }
+std::string DNSCache::Impl::resolve(const std::string & name)
+{
+    if (!isValidDnsName(name)) return std::string();
+    const size_t len = name.length();
+    auto &find_it = storage_[len].find(name);
+    if (find_it == storage_[len].end()) return std::string();
+
+
+    return std::string();
+}
+
 DNSCache::DNSCache(size_t max_size):
 pimpl_(std::make_unique<Impl>(max_size))
 {
 }
-
 DNSCache::~DNSCache()
 {
 }
-
 void DNSCache::update(const std::string & name, const std::string & ip)
 {
-    if (!isValidDnsName(name)) return;
+    if (!isValidDnsName(name) || !isValidIp(ip)) return;
     pimpl_->update(name, ip);
 }
-
 std::string DNSCache::resolve(const std::string & name)
 {
     if (!isValidDnsName(name)) return std::string();
-
-    return std::string();
+    return pimpl_->resolve(name);
 }
-bool DNSCache::isValidDnsName(const std::string & name)
+bool isValidDnsName(const std::string & name)
 {
     size_t len = name.length();
     if (len == 0 || len > MAX_DNS_NAME_LEN) return false;
@@ -96,7 +143,7 @@ bool DNSCache::isValidDnsName(const std::string & name)
     if (is_hyphen || is_dot)  return false;// last char is not letter and not digit
     return true;
 }
-bool DNSCache::isValidIp(const std::string & ip)
+bool isValidIp(const std::string & ip)
 {
 
     bool isV4 = true;
