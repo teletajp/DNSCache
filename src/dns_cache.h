@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <memory>
 namespace dns
 {
 /*! \brief Check ip correct format
