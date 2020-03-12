@@ -67,7 +67,9 @@ void DNSCache::Impl::update(const std::string &name, const std::string &ip)
 {
     lock();
     const size_t len = name.length();
-    auto ret = storage_[len].emplace(name, AuxIp{len, ip});
+    std::string lc_name(name);
+    std::transform(lc_name.begin(), lc_name.end(), lc_name.begin(), [](unsigned char c) { return std::tolower(c); });
+    auto ret = storage_[len].emplace(lc_name, AuxIp{len, ip});
     auto &it = ret.first;
     bool is_new = ret.second;
     if (is_new)
@@ -92,8 +94,10 @@ void DNSCache::Impl::update(const std::string &name, const std::string &ip)
 std::string DNSCache::Impl::resolve(const std::string & name)
 {
     lock();
+    std::string lc_name(name);
+    std::transform(lc_name.begin(), lc_name.end(), lc_name.begin(), [](unsigned char c) { return std::tolower(c); });
     const size_t len = name.length();
-    const auto &find_it = storage_[len].find(name);
+    const auto &find_it = storage_[len].find(lc_name);
     if (find_it == storage_[len].end())
     {
         unlock();
