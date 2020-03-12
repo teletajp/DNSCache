@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.7)
 if($ENV{TRAVIS_BUILD_NUMBER})
 project(dns_cache VERSION 0.0.$ENV{TRAVIS_BUILD_NUMBER})
 else()
