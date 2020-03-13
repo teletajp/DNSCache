@@ -1,7 +1,7 @@
 #include "dns_cache.h"
 #include <algorithm>
 #include <cctype>
-#include <map>
+#include <unordered_map>
 #include <list>
 #include <atomic>
 #include <mutex>
@@ -36,8 +36,8 @@ namespace dns
 #define MAX_LABLE_LEN (63U)
 #define MAX_IPV6_LEN (16U)
 struct AuxIp;
-using record_dict_t = std::map<std::string, AuxIp>;
-using record_dict_iterator_t = std::map<std::string, AuxIp>::iterator;
+using record_dict_t = std::unordered_map<std::string, AuxIp>;
+using record_dict_iterator_t = std::unordered_map<std::string, AuxIp>::iterator;
 using age_list_t = std::list<record_dict_iterator_t>;
 using age_list_iterator_t = std::list<record_dict_iterator_t>::iterator;
 
