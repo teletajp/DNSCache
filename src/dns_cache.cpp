@@ -69,7 +69,7 @@ DNSCache::Impl::Impl(size_t max_size):
 max_size_(max_size),
 current_size_(0)
 {
-    storage_->reserve(max_size_);
+    storage_->reserve(max_size_+1);
 }
 DNSCache::Impl::~Impl()
 {
