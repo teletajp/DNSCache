@@ -4,6 +4,7 @@
 #include <map>
 #include <list>
 #include <atomic>
+#include <mutex>
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #pragma comment(lib, "Ws2_32.lib")
@@ -18,6 +19,16 @@
 #define PVOID void*
 #endif
 
+class spinlock_mutex
+{
+public:
+    spinlock_mutex() { is_lock.clear(); };
+    ~spinlock_mutex() {};
+    void lock() { while (is_lock.test_and_set(std::memory_order_acquire)) pause(0); };
+    void unlock() { is_lock.clear(std::memory_order_release); };;
+private:
+    std::atomic_flag is_lock;
+};
 
 namespace dns
 {
@@ -49,23 +60,20 @@ public:
     age_list_t    age_list_;
     record_dict_t storage_[MAX_DNS_NAME_LEN+1];
     size_t current_size_;
-    std::atomic_flag is_lock;
-    void lock() {while (is_lock.test_and_set(std::memory_order_acquire)) pause(0);}
-    void unlock() { is_lock.clear(std::memory_order_release); };
+    spinlock_mutex sp_lock_;
 };
 
 DNSCache::Impl::Impl(size_t max_size):
 max_size_(max_size),
 current_size_(0)
 {
-    unlock();
 }
 DNSCache::Impl::~Impl()
 {
 }
 void DNSCache::Impl::update(const std::string &name, const std::string &ip)
 {
-    lock();
+    std::lock_guard<spinlock_mutex> lock(sp_lock_);
     const size_t len = name.length();
     std::string lc_name(name);
     std::transform(lc_name.begin(), lc_name.end(), lc_name.begin(), [](unsigned char c) { return std::tolower(c); });
@@ -89,23 +97,20 @@ void DNSCache::Impl::update(const std::string &name, const std::string &ip)
         it->second.ip = ip;
         age_list_.splice(age_list_.end(), age_list_, it->second.age_it);
     }
-    unlock();
 }
 std::string DNSCache::Impl::resolve(const std::string & name)
 {
-    lock();
+    std::lock_guard<spinlock_mutex> lock(sp_lock_);
     std::string lc_name(name);
     std::transform(lc_name.begin(), lc_name.end(), lc_name.begin(), [](unsigned char c) { return std::tolower(c); });
     const size_t len = name.length();
     const auto &find_it = storage_[len].find(lc_name);
     if (find_it == storage_[len].end())
     {
-        unlock();
         return std::string();
     }
 
     age_list_.splice(age_list_.end(), age_list_, find_it->second.age_it);
-    unlock();
     return find_it->second.ip;
 }
 
