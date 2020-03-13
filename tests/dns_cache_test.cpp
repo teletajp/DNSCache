@@ -54,6 +54,16 @@ TEST(DnsCacheTest_update_resolve, ZeroSize)
     dns_server.update("localhost", "127.0.0.1");
 }
 
+TEST(DnsCacheTest_update_resolve, OneSize)
+{
+    DNSCache dns_server(1);
+    dns_server.update("localhost", "127.0.0.1");
+    dns_server.update("localhost", "127.0.0.1");
+    dns_server.update("localhosd", "127.0.0.1");
+    dns_server.update("localhost2", "127.0.0.2");
+    ASSERT_EQ("127.0.0.2", dns_server.resolve("localhost2"));
+}
+
 TEST(DnsCacheTest_update_resolve, OK)
 {
     DNSCache dns_server(5);
