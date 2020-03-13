@@ -67,12 +67,12 @@ TEST(DnsCacheTest_update_resolve, OneSize)
 TEST(DnsCacheTest_update_resolve, OK)
 {
     DNSCache dns_server(5);
-    dns_server.update("localhost", "127.0.0.1");
+    dns_server.update("locaLhost", "127.0.0.1");
     dns_server.update("google.com", "8.8.8.8");
     dns_server.update("ya.ru", "1.1.1.1");
     dns_server.update("rambler", "2.2.2.2");
     dns_server.update("mail.ru", "3.3.3.3");
-    ASSERT_EQ("127.0.0.1", dns_server.resolve("localhost"));
+    ASSERT_EQ("127.0.0.1", dns_server.resolve("localHost"));
     ASSERT_EQ("8.8.8.8", dns_server.resolve("google.com"));
     ASSERT_EQ("1.1.1.1", dns_server.resolve("ya.ru"));
     ASSERT_EQ("2.2.2.2", dns_server.resolve("rambler"));
