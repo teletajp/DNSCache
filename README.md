@@ -36,5 +36,5 @@ If you want build tests, you need install **googletest framework**.
 ## Features
 
 *   Verifying that the name and ip address are correct
-*   Optimazed searching/insertion/updating algorithm (O < LOG N)
+*   Optimazed searching/insertion/updating algorithm (O(1))
 *   Optimazed deleting old records algorithm (O = constant time) 

@@ -28,7 +28,7 @@ using record_dict_t = std::unordered_map<std::string, AuxIp>;
 using record_dict_iterator_t = std::unordered_map<std::string, AuxIp>::iterator;
 using age_list_t = std::list<record_dict_iterator_t>;
 using age_list_iterator_t = std::list<record_dict_iterator_t>::iterator;
-
+static std::mutex singleton_creation_mut;
 struct AuxIp
 {
     std::string ip;
@@ -60,7 +60,6 @@ DNSCache::Impl::~Impl()
 {
 }
 
-static std::mutex singleton_creation_mut;
 DNSCache& DNSCache::Instance(size_t max_size)
 {
     static DNSCache *pinstance;
@@ -82,6 +81,7 @@ void DNSCache::Impl::update(const std::string &name, const std::string &ip)
     std::string lc_name(name);
     std::transform(lc_name.begin(), lc_name.end(), lc_name.begin(), [](unsigned char c) { return std::tolower(c); });
     auto ret = storage_.emplace(lc_name, AuxIp{ip});
+
     auto &it = ret.first;
     bool is_new = ret.second;
     if (is_new)
