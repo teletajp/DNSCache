@@ -62,7 +62,6 @@ DNSCache::Impl::~Impl()
 void DNSCache::Impl::update(const std::string &name, const std::string &ip)
 {
     std::lock_guard<std::mutex> lock(mut_lock_);
-    const size_t len = name.length();
     std::string lc_name(name);
     std::transform(lc_name.begin(), lc_name.end(), lc_name.begin(), [](unsigned char c) { return std::tolower(c); });
     auto ret = storage_.emplace(lc_name, AuxIp{ip});
@@ -91,7 +90,6 @@ std::string DNSCache::Impl::resolve(const std::string & name)
     std::lock_guard<std::mutex> lock(mut_lock_);
     std::string lc_name(name);
     std::transform(lc_name.begin(), lc_name.end(), lc_name.begin(), [](unsigned char c) { return std::tolower(c); });
-    const size_t len = name.length();
     const auto &find_it = storage_.find(lc_name);
     if (find_it == storage_.end())
     {
