@@ -1,5 +1,6 @@
 add_library(${PROJECT_NAME})
 
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD 14
     CXX_STANDARD_REQUIRED ON
@@ -9,7 +10,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 target_compile_options(${PROJECT_NAME}
 PRIVATE 
-	$<$<CXX_COMPILER_ID:GNU>:-Werror> # Флаги для GNU компилятора
+	$<$<CXX_COMPILER_ID:GNU>:-Werror -O3> # Флаги для GNU компилятора
 	$<$<CXX_COMPILER_ID:MSVC>: -D_CRT_SECURE_NO_WARNINGS /Zi /std:c++14>
 	#$<$<CXX_COMPILER_ID:MSVC>:/W3 /WX /MT -D_CRT_SECURE_NO_WARNINGS -DHAVE_REMOTE>
 ) # Флаги для MSVC компилятора

@@ -3,7 +3,6 @@
 #include <cctype>
 #include <unordered_map>
 #include <list>
-#include <atomic>
 #include <mutex>
 #ifdef _WIN32
 #include <ws2tcpip.h>
@@ -19,17 +18,6 @@
 #define PVOID void*
 #endif
 
-class spinlock_mutex
-{
-public:
-    spinlock_mutex() { is_lock.clear(); };
-    ~spinlock_mutex() {};
-    void lock() { while (is_lock.test_and_set(std::memory_order_acquire)) pause(0); };
-    void unlock() { is_lock.clear(std::memory_order_release); };;
-private:
-    std::atomic_flag is_lock;
-};
-
 namespace dns
 {
 #define MAX_DNS_NAME_LEN (255U)
@@ -43,10 +31,9 @@ using age_list_iterator_t = std::list<record_dict_iterator_t>::iterator;
 
 struct AuxIp
 {
-    size_t dns_name_len;
     std::string ip;
     age_list_iterator_t age_it;
-    AuxIp(const size_t dns_name_len, const std::string &ip) :dns_name_len(dns_name_len), ip(ip) {}
+    AuxIp(const std::string &ip) :ip(ip) {}
 };
 
 class DNSCache::Impl
@@ -58,27 +45,27 @@ public:
     void update(const std::string &name, const std::string &ip);
     std::string resolve(const std::string & name);
     age_list_t    age_list_;
-    record_dict_t storage_[MAX_DNS_NAME_LEN+1];
+    record_dict_t storage_;
     size_t current_size_;
-    spinlock_mutex sp_lock_;
+    std::mutex mut_lock_;
 };
 
 DNSCache::Impl::Impl(size_t max_size):
 max_size_(max_size),
 current_size_(0)
 {
-    storage_->reserve(max_size_+1);
+    storage_.reserve(max_size_+1);
 }
 DNSCache::Impl::~Impl()
 {
 }
 void DNSCache::Impl::update(const std::string &name, const std::string &ip)
 {
-    std::lock_guard<spinlock_mutex> lock(sp_lock_);
+    std::lock_guard<std::mutex> lock(mut_lock_);
     const size_t len = name.length();
     std::string lc_name(name);
     std::transform(lc_name.begin(), lc_name.end(), lc_name.begin(), [](unsigned char c) { return std::tolower(c); });
-    auto ret = storage_[len].emplace(lc_name, AuxIp{len, ip});
+    auto ret = storage_.emplace(lc_name, AuxIp{ip});
     auto &it = ret.first;
     bool is_new = ret.second;
     if (is_new)
@@ -86,7 +73,7 @@ void DNSCache::Impl::update(const std::string &name, const std::string &ip)
         if (current_size_ == max_size_)
         {
             auto &del_rec_it = age_list_.front();
-            storage_[del_rec_it->second.dns_name_len].erase(del_rec_it);
+            storage_.erase(del_rec_it);
             age_list_.pop_front();
             --current_size_;
         }
@@ -101,12 +88,12 @@ void DNSCache::Impl::update(const std::string &name, const std::string &ip)
 }
 std::string DNSCache::Impl::resolve(const std::string & name)
 {
-    std::lock_guard<spinlock_mutex> lock(sp_lock_);
+    std::lock_guard<std::mutex> lock(mut_lock_);
     std::string lc_name(name);
     std::transform(lc_name.begin(), lc_name.end(), lc_name.begin(), [](unsigned char c) { return std::tolower(c); });
     const size_t len = name.length();
-    const auto &find_it = storage_[len].find(lc_name);
-    if (find_it == storage_[len].end())
+    const auto &find_it = storage_.find(lc_name);
+    if (find_it == storage_.end())
     {
         return std::string();
     }
