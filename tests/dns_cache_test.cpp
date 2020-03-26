@@ -48,15 +48,9 @@ TEST(DnsCacheTest_isValidIp, OK)
     ASSERT_FALSE(isValidIp("0.0.0.FF"));
 }
 
-TEST(DnsCacheTest_update_resolve, ZeroSize)
-{
-    DNSCache dns_server(0);
-    dns_server.update("localhost", "127.0.0.1");
-}
-
 TEST(DnsCacheTest_update_resolve, OneSize)
 {
-    DNSCache dns_server(1);
+    DNSCache& dns_server = DNSCache::Instance(1);
     dns_server.update("localhost", "127.0.0.1");
     dns_server.update("localhost", "127.0.0.1");
     dns_server.update("localhosd", "127.0.0.1");
@@ -66,7 +60,7 @@ TEST(DnsCacheTest_update_resolve, OneSize)
 
 TEST(DnsCacheTest_update_resolve, OK)
 {
-    DNSCache dns_server(5);
+    DNSCache& dns_server = DNSCache::Instance(5);
     dns_server.update("locaLhost", "127.0.0.1");
     dns_server.update("google.com", "8.8.8.8");
     dns_server.update("ya.ru", "1.1.1.1");
@@ -93,6 +87,13 @@ a63aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.a63aaaaaaaaaaaaa
 "2001:0db8:85a3:0000:0000:8a2e:0370:7334");
     ASSERT_EQ("2001:0db8:85a3:0000:0000:8a2e:0370:7334", dns_server.resolve("a63aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.a63aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.\
 a63aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.a63aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.ru"));
+}
+
+TEST(DnsCacheTest_update_resolve, ZeroSize)
+{
+    DNSCache& dns_server = DNSCache::Instance(0); // Instance always exist
+    dns_server.update("localhost", "127.0.0.2");
+    ASSERT_EQ("127.0.0.2", dns_server.resolve("localhost"));
 }
 
 int main(int argc, char **argv) {

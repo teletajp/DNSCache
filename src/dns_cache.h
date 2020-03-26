@@ -17,11 +17,13 @@ bool isValidDnsName(const std::string& name);
 */
 class DNSCache
 {
-public:
+protected:
     /*! \brief Constructor
     * \param max_size The maximum number of records available for storage
     */
     explicit DNSCache(size_t max_size);
+public:
+    static DNSCache& Instance(size_t max_size); 
     /*! \brief Destructor
     */
     virtual ~DNSCache();
