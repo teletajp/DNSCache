@@ -75,7 +75,7 @@ uint64_t test_resolve_fun(dns::DNSCache *dc)
 int main(int, char const **)
 {
     Clock timer;
-    dns::DNSCache dc(12000000);
+    dns::DNSCache &dc = dns::DNSCache::Instance(12000000);
     timer.start();
     uint64_t count = test_update_fun(&dc);
     timer.stop();

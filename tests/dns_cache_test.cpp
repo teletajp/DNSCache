@@ -66,6 +66,7 @@ TEST(DnsCacheTest_update_resolve, OK)
     dns_server.update("ya.ru", "1.1.1.1");
     dns_server.update("rambler", "2.2.2.2");
     dns_server.update("mail.ru", "3.3.3.3");
+    dns_server.update("localHost", "127.0.0.1");
     ASSERT_EQ("127.0.0.1", dns_server.resolve("localHost"));
     ASSERT_EQ("8.8.8.8", dns_server.resolve("google.com"));
     ASSERT_EQ("1.1.1.1", dns_server.resolve("ya.ru"));
