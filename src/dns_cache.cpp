@@ -28,7 +28,7 @@ using record_dict_t = std::unordered_map<std::string, AuxIp>;
 using record_dict_iterator_t = std::unordered_map<std::string, AuxIp>::iterator;
 using age_list_t = std::list<record_dict_iterator_t>;
 using age_list_iterator_t = std::list<record_dict_iterator_t>::iterator;
-static std::once_flag create_instanse_flag_;
+
 struct AuxIp
 {
     std::string ip;
@@ -62,6 +62,7 @@ DNSCache::Impl::~Impl()
 
 DNSCache& DNSCache::Instance(size_t max_size)
 {
+    static std::once_flag create_instanse_flag_;
     static DNSCache *pinstance;
     try
     {
