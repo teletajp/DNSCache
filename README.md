@@ -3,10 +3,10 @@ The implementation of class for the DNS cache with the following interface:
 ```
 class DNSCache
 {
-public:
-explicit DNSCache(size_t max_size);
-void update(const std::string& name, const std::string& ip);
-std::string resolve(const std::string& name);
+	public:
+	explicit DNSCache(size_t max_size);
+	void update(const std::string& name, const std::string& ip);
+	std::string resolve(const std::string& name);
 };
 ```
 This class stores mapping between the name and IP address. The maximum number of records available for storage is initialize in the constructor with the max_size parameter.
@@ -36,5 +36,5 @@ If you want build tests, you need install **googletest framework**.
 ## Features
 
 *   Verifying that the name and ip address are correct
-*   Optimazed searching/insertion/updating algorithm (O(1))
-*   Optimazed deleting old records algorithm (O = constant time) 
+*   Optimized searching/insertion/updating algorithm (O(1))
+*   Optimized deleting old records algorithm (O = constant time) 
